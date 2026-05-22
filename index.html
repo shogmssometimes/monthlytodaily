@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monthly Calendar</title>
+  <meta name="theme-color" content="#16213e" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="stylesheet" href="./app.css" />
+</head>
+<body>
+
+<header>
+  <h1>Monthly</h1>
+  <div class="year-controls">
+    <button id="prev-year">&#8592;</button>
+    <span id="year-display"></span>
+    <button id="next-year">&#8594;</button>
+  </div>
+</header>
+
+<div id="label-panel">
+  <h2>Labels</h2>
+  <div id="label-chips"></div>
+  <div id="add-label-form">
+    <input id="new-label-input" type="text" placeholder="New label name…" maxlength="32" />
+    <button id="add-label-btn">+ Add</button>
+  </div>
+</div>
+
+<div id="main-wrap">
+  <div id="calendar"></div>
+  <aside id="avail-panel">
+    <div class="avail-header">Open Days</div>
+    <div id="avail-list"></div>
+  </aside>
+</div>
+
+<div id="ctx-menu">
+  <h3 id="ctx-title"></h3>
+  <div id="ctx-items"></div>
+</div>
+
+<div id="hint"></div>
+
+<script src="./app.js"></script>
+</body>
+</html>
