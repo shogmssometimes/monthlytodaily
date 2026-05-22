@@ -64,6 +64,30 @@ header h1 {
   text-align: center;
 }
 
+#data-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+#data-actions button,
+#data-actions label#import-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius);
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: background 0.15s, color 0.15s;
+  user-select: none;
+  white-space: nowrap;
+}
+#data-actions button:hover,
+#data-actions label#import-btn:hover { background: var(--accent); color: #fff; }
+#import-file { display: none; }
+
 /* ── Label panel ── */
 #label-panel {
   display: flex;

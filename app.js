@@ -499,6 +499,69 @@ function addLabel() {
 addLabelBtn.addEventListener('click', addLabel);
 newLabelInput.addEventListener('keydown', e => { if (e.key === 'Enter') addLabel(); });
 
+// ── Share / Export / Import ────────────────────────────────────────────────
+function copyShareLink() {
+  const payload = encodeURIComponent(JSON.stringify({ labels: state.labels, spans: state.spans, year: state.year }));
+  const url = `${location.origin}${location.pathname}#share=${payload}`;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('share-btn');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 1800);
+  });
+}
+
+function exportData() {
+  const payload = JSON.stringify({ labels: state.labels, spans: state.spans, year: state.year }, null, 2);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
+  a.download = `monthly-${state.year}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.labels || !data.spans) throw new Error();
+      state.labels = data.labels;
+      state.spans  = data.spans;
+      if (data.year) state.year = data.year;
+      state.activeLabel = null;
+      save();
+      renderLabelPanel();
+      renderCalendar();
+      showHint();
+    } catch { alert('Invalid file — expected a Monthly export.'); }
+  };
+  reader.readAsText(file);
+}
+
+function tryLoadFromHash() {
+  const hash = location.hash;
+  if (!hash.startsWith('#share=')) return;
+  try {
+    const data = JSON.parse(decodeURIComponent(hash.slice(7)));
+    if (!data.labels || !data.spans) return;
+    state.labels = data.labels;
+    state.spans  = data.spans;
+    if (data.year) state.year = data.year;
+    state.activeLabel = null;
+    save();
+    history.replaceState(null, '', location.pathname); // clean URL
+  } catch {}
+}
+
+document.getElementById('share-btn').addEventListener('click', copyShareLink);
+document.getElementById('export-btn').addEventListener('click', exportData);
+document.getElementById('import-file').addEventListener('change', e => {
+  importFile(e.target.files[0]);
+  e.target.value = ''; // reset so same file can be re-imported
+});
+
 // ── Availability sidebar ───────────────────────────────────────────────────
 function renderAvailability() {
   const covered = coveredDays();
@@ -532,6 +595,7 @@ function renderAvailability() {
 
 // ── Init ───────────────────────────────────────────────────────────────────
 load();
+tryLoadFromHash();
 renderLabelPanel();
 renderCalendar();
 renderAvailability();
