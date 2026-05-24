@@ -1,4 +1,4 @@
-const CACHE_NAME = 'monthly-calendar-v1';
+const CACHE_NAME = 'monthly-calendar-v2';
 const ASSETS = [
   './index.html',
   './app.css',
