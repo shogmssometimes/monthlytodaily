@@ -135,6 +135,13 @@ header h1 {
   white-space: nowrap;
 }
 .label-chip.active { border-color: rgba(0,0,0,0.35); box-shadow: 0 0 0 1px rgba(0,0,0,0.2); }
+.label-chip.hidden { opacity: 0.55; filter: saturate(0.75); }
+.label-chip .visibility {
+  opacity: 0.75;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.label-chip .visibility:hover { opacity: 1; }
 .label-chip .del { opacity: 0.5; font-size: 0.8em; line-height: 1; }
 .label-chip .del:hover { opacity: 1; }
 

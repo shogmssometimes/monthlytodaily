@@ -21,8 +21,19 @@ function save() {
 function load() {
   try {
     const d = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (d) state = { ...state, ...d };
+    if (d) {
+      state = { ...state, ...d };
+      state.labels = (d.labels || []).map(l => ({ ...l, hidden: Boolean(l.hidden) }));
+      if (!state.labels.some(l => l.id === state.activeLabel && !l.hidden)) {
+        state.activeLabel = null;
+      }
+    }
   } catch {}
+}
+
+function labelVisible(labelId) {
+  const label = state.labels.find(l => l.id === labelId);
+  return label ? !label.hidden : false;
 }
 
 // ── DOM refs ───────────────────────────────────────────────────────────────
@@ -83,6 +94,7 @@ function uid() {
 function coveredDays() {
   const s = new Set();
   for (const sp of state.spans) {
+    if (!labelVisible(sp.labelId)) continue;
     for (const d of sp.days) s.add(d);
   }
   return s;
@@ -93,18 +105,32 @@ function renderLabelPanel() {
   labelPanel.innerHTML = '';
   for (const l of state.labels) {
     const chip = document.createElement('div');
-    chip.className = 'label-chip' + (state.activeLabel === l.id ? ' active' : '');
+    chip.className = 'label-chip' + (state.activeLabel === l.id ? ' active' : '') + (l.hidden ? ' hidden' : '');
     chip.style.background = l.color;
     chip.style.color = 'rgba(0,0,0,0.8)';
     chip.dataset.id = l.id;
-    chip.innerHTML = `<span>${l.name}</span><span class="del" data-del="${l.id}" title="Delete label">✕</span>`;
+    chip.innerHTML = `
+      <span class="label-name">${l.name}</span>
+      <span class="visibility" data-vis="${l.id}" title="${l.hidden ? 'Reveal label' : 'Hide label'}">${l.hidden ? '🙈' : '👁️'}</span>
+      <span class="del" data-del="${l.id}" title="Delete label">✕</span>`;
+
     chip.addEventListener('click', e => {
       if (e.target.dataset.del) return;
+      if (e.target.dataset.vis) {
+        l.hidden = !l.hidden;
+        if (state.activeLabel === l.id && l.hidden) state.activeLabel = null;
+        save();
+        renderLabelPanel();
+        renderCalendar();
+        showHint();
+        return;
+      }
       state.activeLabel = state.activeLabel === l.id ? null : l.id;
       save();
       renderLabelPanel();
       showHint();
     });
+
     chip.querySelector('.del').addEventListener('click', e => {
       e.stopPropagation();
       if (!confirm(`Delete label "${l.name}" and all its spans?`)) return;
@@ -234,7 +260,7 @@ function renderCalendar() {
 // ── Compute bar segment metadata for a month ──────────────────────────────
 function computeSegments(month, firstDay, numDays) {
   const relevantSpans = state.spans.filter(sp =>
-    sp.days.some(dk => {
+    labelVisible(sp.labelId) && sp.days.some(dk => {
       const d = parseKey(dk);
       return d.getFullYear() === state.year && d.getMonth() === month;
     })
@@ -487,7 +513,7 @@ function addLabel() {
   if (!name) return;
   const color = PALETTE[state.labels.length % PALETTE.length];
   const id    = uid();
-  state.labels.push({ id, name, color });
+  state.labels.push({ id, name, color, hidden: false });
   state.activeLabel = id;
   newLabelInput.value = '';
   save();
@@ -527,7 +553,7 @@ function importFile(file) {
     try {
       const data = JSON.parse(ev.target.result);
       if (!data.labels || !data.spans) throw new Error();
-      state.labels = data.labels;
+      state.labels = data.labels.map(l => ({ ...l, hidden: Boolean(l.hidden) }));
       state.spans  = data.spans;
       if (data.year) state.year = data.year;
       state.activeLabel = null;
@@ -546,7 +572,7 @@ function tryLoadFromHash() {
   try {
     const data = JSON.parse(decodeURIComponent(hash.slice(7)));
     if (!data.labels || !data.spans) return;
-    state.labels = data.labels;
+    state.labels = data.labels.map(l => ({ ...l, hidden: Boolean(l.hidden) }));
     state.spans  = data.spans;
     if (data.year) state.year = data.year;
     state.activeLabel = null;
