@@ -114,17 +114,17 @@ function renderLabelPanel() {
       <span class="visibility" data-vis="${l.id}" title="${l.hidden ? 'Reveal label' : 'Hide label'}">${l.hidden ? '🙈' : '👁️'}</span>
       <span class="del" data-del="${l.id}" title="Delete label">✕</span>`;
 
-    chip.addEventListener('click', e => {
-      if (e.target.dataset.del) return;
-      if (e.target.dataset.vis) {
-        l.hidden = !l.hidden;
-        if (state.activeLabel === l.id && l.hidden) state.activeLabel = null;
-        save();
-        renderLabelPanel();
-        renderCalendar();
-        showHint();
-        return;
-      }
+    chip.querySelector('.visibility').addEventListener('click', e => {
+      e.stopPropagation();
+      l.hidden = !l.hidden;
+      if (state.activeLabel === l.id && l.hidden) state.activeLabel = null;
+      save();
+      renderLabelPanel();
+      renderCalendar();
+      showHint();
+    });
+
+    chip.addEventListener('click', () => {
       state.activeLabel = state.activeLabel === l.id ? null : l.id;
       save();
       renderLabelPanel();
