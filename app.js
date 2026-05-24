@@ -167,6 +167,7 @@ const MONTHS   = ['January','February','March','April','May','June',
                   'July','August','September','October','November','December'];
 
 function renderCalendar() {
+  const prevScroll = window.scrollY || document.documentElement.scrollTop;
   yearDisplay.textContent = state.year;
   calendarEl.innerHTML = '';
   const covered = coveredDays();
@@ -255,6 +256,7 @@ function renderCalendar() {
     placeBars(grid, m, segments, firstDay);
   }
   renderAvailability();
+  window.scrollTo(0, prevScroll);
 }
 
 // ── Compute bar segment metadata for a month ──────────────────────────────
